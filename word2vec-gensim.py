@@ -27,11 +27,14 @@
 #
 
 # %% papermill={"duration": 9.422107, "end_time": "2021-01-06T19:08:15.802634", "exception": false, "start_time": "2021-01-06T19:08:06.380527", "status": "completed"}
-# #%pip install memory_profiler
+# %pip install memory_profiler
 
-# %load_ext memory_profiler
+# %load_ext memory_profiler  # Uncomment this line if running in a Jupyter notebook
 
-# %pip install -q zhconv
+import sys
+import subprocess
+
+subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "zhconv"])
 
 # %% [markdown] papermill={"duration": 0.030417, "end_time": "2021-01-06T19:08:15.864878", "exception": false, "start_time": "2021-01-06T19:08:15.834461", "status": "completed"}
 # 確認相關 Packages
@@ -40,7 +43,7 @@
 # %pip install scipy==1.12
 
 
-import os 
+import os
 
 # Packages
 import gensim
@@ -51,9 +54,17 @@ from datetime import datetime as dt
 from typing import List
 
 
-if not os.path.isfile('dict.txt.big'):
-    # !wget https://github.com/fxsjy/jieba/raw/master/extra_dict/dict.txt.big
-jieba.set_dictionary('dict.txt.big')
+if not os.path.isfile("dict.txt.big"):
+    import subprocess
+
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "wget"])
+    import wget
+
+    wget.download(
+        "https://github.com/fxsjy/jieba/raw/master/extra_dict/dict.txt.big",
+        "dict.txt.big",
+    )
+jieba.set_dictionary("dict.txt.big")
 
 print("gensim", gensim.__version__)
 print("jieba", jieba.__version__)
@@ -79,7 +90,7 @@ print("jieba", jieba.__version__)
 # 目前已經使用另一份 Notebook ([維基百科中文語料庫 zhWiki_20210101](https://www.kaggle.com/bbqlp33/zhwiki-20210101)) 下載好中文維基百科語料，並可以直接引用
 
 # %% papermill={"duration": 28.972913, "end_time": "2021-01-06T19:08:50.019822", "exception": false, "start_time": "2021-01-06T19:08:21.046909", "status": "completed"}
-#ZhWiki = "/kaggle/input/zhwiki-20250401/zhwiki-20250401-pages-articles.xml.bz2"
+# ZhWiki = "/kaggle/input/zhwiki-20250401/zhwiki-20250401-pages-articles.xml.bz2"
 
 # #!du -sh $ZhWiki
 # #!md5sum $ZhWiki
@@ -89,17 +100,20 @@ print("jieba", jieba.__version__)
 import os
 
 # 完整 wiki articles 下載位置
-ZhWiki = \
+ZhWiki = (
     "https://dumps.wikimedia.org/zhwiki/20250401/zhwiki-20250401-pages-articles.xml.bz2"
+)
 
 
 # Download
 # 取得檔名
-ZhWiki_filename = ZhWiki.split('/')[-1]
+ZhWiki_filename = ZhWiki.split("/")[-1]
 
 # 若檔案已存在則不下載
 if not os.path.isfile(ZhWiki_filename):
-    # !wget $ZhWiki
+    import subprocess
+
+    subprocess.check_call(["wget", ZhWiki])
 
 else:
     print(f"{ZhWiki_filename} 已存在，略過下載。")
@@ -181,25 +195,31 @@ import spacy
 spacy.cli.download("zh_core_web_sm")  # 下載 spacy 中文模組
 spacy.cli.download("en_core_web_sm")  # 下載 spacy 英文模組
 
-nlp_zh = spacy.load("zh_core_web_sm") # 載入 spacy 中文模組
-nlp_en = spacy.load("en_core_web_sm") # 載入 spacy 英文模組
+nlp_zh = spacy.load("zh_core_web_sm")  # 載入 spacy 中文模組
+nlp_en = spacy.load("en_core_web_sm")  # 載入 spacy 英文模組
 
 # 印出前20個停用詞
-print('--\n')
-print(f"中文停用詞 Total={len(nlp_zh.Defaults.stop_words)}: {list(nlp_zh.Defaults.stop_words)[:20]} ...")
+print("--\n")
+print(
+    f"中文停用詞 Total={len(nlp_zh.Defaults.stop_words)}: {list(nlp_zh.Defaults.stop_words)[:20]} ..."
+)
 print("--")
-print(f"英文停用詞 Total={len(nlp_en.Defaults.stop_words)}: {list(nlp_en.Defaults.stop_words)[:20]} ...")
+print(
+    f"英文停用詞 Total={len(nlp_en.Defaults.stop_words)}: {list(nlp_en.Defaults.stop_words)[:20]} ..."
+)
 
 # %% papermill={"duration": 0.063819, "end_time": "2021-01-06T19:09:30.529975", "exception": false, "start_time": "2021-01-06T19:09:30.466156", "status": "completed"}
-STOPWORDS =  nlp_zh.Defaults.stop_words | \
-             nlp_en.Defaults.stop_words | \
-             set(["\n", "\r\n", "\t", " ", ""])
+STOPWORDS = (
+    nlp_zh.Defaults.stop_words
+    | nlp_en.Defaults.stop_words
+    | set(["\n", "\r\n", "\t", " ", ""])
+)
 print(len(STOPWORDS))
 
 # 將簡體停用詞轉成繁體，擴充停用詞表
 for word in STOPWORDS.copy():
     STOPWORDS.add(zhconv.convert(word, "zh-tw"))
-    
+
 print(len(STOPWORDS))
 
 
@@ -223,31 +243,38 @@ print(len(STOPWORDS))
 # The documents are extracted on-the-fly, so that the whole (massive) dump can stay compressed on disk.
 #
 
+
 # %% papermill={"duration": 0.051347, "end_time": "2021-01-06T19:09:30.706981", "exception": false, "start_time": "2021-01-06T19:09:30.655634", "status": "completed"}
 def preprocess_and_tokenize(
-    text: str, token_min_len: int=1, token_max_len: int=15, lower: bool=True) -> List[str]:
+    text: str, token_min_len: int = 1, token_max_len: int = 15, lower: bool = True
+) -> List[str]:
     if lower:
-        text  = text.lower()
+        text = text.lower()
     text = zhconv.convert(text, "zh-tw")
     return [
-        token for token in jieba.cut(text, cut_all=False)
-        if token_min_len <= len(token) <= token_max_len and \
-            token not in STOPWORDS
+        token
+        for token in jieba.cut(text, cut_all=False)
+        if token_min_len <= len(token) <= token_max_len and token not in STOPWORDS
     ]
 
 
-
 # %% papermill={"duration": 0.052172, "end_time": "2021-01-06T19:09:30.800774", "exception": false, "start_time": "2021-01-06T19:09:30.748602", "status": "completed"}
-print(preprocess_and_tokenize("歐幾里得，西元前三世紀的古希臘數學家，現在被認為是幾何之父，此畫為拉斐爾"))
+print(
+    preprocess_and_tokenize(
+        "歐幾里得，西元前三世紀的古希臘數學家，現在被認為是幾何之父，此畫為拉斐爾"
+    )
+)
 print(preprocess_and_tokenize("我来到北京清华大学"))
 print(preprocess_and_tokenize("中英夾雜的example，Word2Vec應該很interesting吧?"))
 
 # %% papermill={"duration": 8578.445907, "end_time": "2021-01-06T21:32:29.288882", "exception": false, "start_time": "2021-01-06T19:09:30.842975", "status": "completed"}
 # %%time
 # %%memit
-ZhWiki_path="zhwiki-20250401-pages-articles.xml.bz2"
+ZhWiki_path = "zhwiki-20250401-pages-articles.xml.bz2"
 print(f"Parsing {ZhWiki_path}...")
-wiki_corpus = WikiCorpus(ZhWiki_path, tokenizer_func=preprocess_and_tokenize, token_min_len=1)
+wiki_corpus = WikiCorpus(
+    ZhWiki_path, tokenizer_func=preprocess_and_tokenize, token_min_len=1
+)
 
 # %% [markdown] papermill={"duration": 0.042937, "end_time": "2021-01-06T21:32:29.375141", "exception": false, "start_time": "2021-01-06T21:32:29.332204", "status": "completed"}
 # 初始化`WikiCorpus`後，能藉由`get_texts()`可迭代每一篇文章，它所回傳的是一個`tokens list`，我以空白符將這些 `tokens` 串接起來，統一輸出到同一份文字檔裡。這邊要注意一件事，`get_texts()`受 `article_min_tokens` 參數的限制，只會回傳內容長度大於 **50** (default) 的文章。
@@ -276,7 +303,7 @@ WIKI_SEG_TXT = "wiki_seg.txt"
 
 generator = wiki_corpus.get_texts()
 
-with open(WIKI_SEG_TXT, "w", encoding='utf-8') as output:
+with open(WIKI_SEG_TXT, "w", encoding="utf-8") as output:
     for texts_num, tokens in enumerate(generator):
         output.write(" ".join(tokens) + "\n")
 
@@ -340,9 +367,9 @@ print(list(model.wv.vocab.keys())[:10])
 # 詞彙的向量
 
 # %% papermill={"duration": 0.070434, "end_time": "2021-01-07T00:46:46.800247", "exception": false, "start_time": "2021-01-07T00:46:46.729813", "status": "completed"}
-vec = model.wv['數學家']
+vec = model.wv["數學家"]
 print(vec.shape)
-vec 
+vec
 
 # %% [markdown] papermill={"duration": 0.05081, "end_time": "2021-01-07T00:46:46.897024", "exception": false, "start_time": "2021-01-07T00:46:46.846214", "status": "completed"}
 # 沒見過的詞彙
