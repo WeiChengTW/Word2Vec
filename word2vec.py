@@ -46,7 +46,7 @@ print(f"總共收錄了 {len(model.wv.index_to_key)} 個詞彙")
 
 
 print("印出 20 個收錄詞彙:")
-print(model.wv.index_to_key[:10])
+print(model.wv.index_to_key[:20])
 
 # %% [markdown] papermill={"duration": 0.158624, "end_time": "2021-01-07T00:46:46.682787", "exception": false, "start_time": "2021-01-07T00:46:46.524163", "status": "completed"}
 # 詞彙的向量

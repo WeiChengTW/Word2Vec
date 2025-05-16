@@ -100,9 +100,7 @@ print("jieba", jieba.__version__)
 import os
 
 # 完整 wiki articles 下載位置
-ZhWiki = (
-    "https://dumps.wikimedia.org/zhwiki/20250401/zhwiki-20250401-pages-articles.xml.bz2"
-)
+ZhWiki = "https://dumps.wikimedia.org/zhwiki/20250120/zhwiki-20250120-pages-articles-multistream.xml.bz2"
 
 
 # Download
@@ -270,7 +268,7 @@ print(preprocess_and_tokenize("中英夾雜的example，Word2Vec應該很interes
 # %% papermill={"duration": 8578.445907, "end_time": "2021-01-06T21:32:29.288882", "exception": false, "start_time": "2021-01-06T19:09:30.842975", "status": "completed"}
 # %%time
 # %%memit
-ZhWiki_path = "zhwiki-20250401-pages-articles.xml.bz2"
+ZhWiki_path = "zhwiki-20250120-pages-articles-multistream.xml.bz2"
 print(f"Parsing {ZhWiki_path}...")
 wiki_corpus = WikiCorpus(
     ZhWiki_path, tokenizer_func=preprocess_and_tokenize, token_min_len=1
