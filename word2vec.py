@@ -1,6 +1,7 @@
 from gensim.models import word2vec
 import multiprocessing
 
+
 WIKI_SEG_TXT = "wiki_seg.txt"
 max_cpu_counts = multiprocessing.cpu_count()
 word_dim_size = 300  #  設定 word vector 維度
@@ -41,10 +42,11 @@ model.wv.vectors
 # 收錄的詞彙
 
 # %% papermill={"duration": 0.247284, "end_time": "2021-01-07T00:46:46.476801", "exception": false, "start_time": "2021-01-07T00:46:46.229517", "status": "completed"}
-print(f"總共收錄了 {len(model.wv.vocab)} 個詞彙")
+print(f"總共收錄了 {len(model.wv.index_to_key)} 個詞彙")
+
 
 print("印出 20 個收錄詞彙:")
-print(list(model.wv.vocab.keys())[:10])
+print(model.wv.index_to_key[:10])
 
 # %% [markdown] papermill={"duration": 0.158624, "end_time": "2021-01-07T00:46:46.682787", "exception": false, "start_time": "2021-01-07T00:46:46.524163", "status": "completed"}
 # 詞彙的向量
