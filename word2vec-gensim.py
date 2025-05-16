@@ -328,7 +328,7 @@ print(f"Use {max_cpu_counts} workers to train Word2Vec (dim={word_dim_size})")
 sentences = word2vec.LineSentence(WIKI_SEG_TXT)
 
 # 訓練模型
-model = word2vec.Word2Vec(sentences, size=word_dim_size, workers=max_cpu_counts)
+model = word2vec.Word2Vec(sentences, vector_size=word_dim_size, workers=max_cpu_counts)
 
 # 儲存模型
 output_model = f"word2vec.zh.{word_dim_size}.model"
