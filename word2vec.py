@@ -1,6 +1,7 @@
 from gensim.models import word2vec
 import multiprocessing
 
+WIKI_SEG_TXT = "wiki_seg.txt"
 max_cpu_counts = multiprocessing.cpu_count()
 word_dim_size = 300  #  設定 word vector 維度
 print(f"Use {max_cpu_counts} workers to train Word2Vec (dim={word_dim_size})")
